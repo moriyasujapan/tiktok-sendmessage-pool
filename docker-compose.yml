@@ -2,7 +2,6 @@ version: "3.9"
 services:
   api:
     build: .
-    command: npm run dev
     environment:
       - PORT=3000
       - TIKTOK_LOGIN_MODE=${TIKTOK_LOGIN_MODE:-manual}
@@ -29,4 +28,3 @@ services:
       - SE_NODE_MAX_SESSIONS=1
     ports:
       - "4444:4444"
-

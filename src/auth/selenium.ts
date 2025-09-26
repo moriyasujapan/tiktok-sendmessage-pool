@@ -51,14 +51,14 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
     } else {
       await driver.wait(async () => {
         const cookies = await driver.manage().getCookies();
-        return cookies.some(c => c.name === "sessionid");
+        return cookies.some((c: { name: string }) => c.name === "sessionid");  // ★ 型注釈
       }, 300000);
       await driver.get(HOMEPAGE);
     }
 
     const cookies = await driver.manage().getCookies();
-    const session = cookies.find(c => c.name === "sessionid");
-    const idc = cookies.find(c => c.name === "tt-target-idc");
+    const session = cookies.find((c: { name: string }) => c.name === "sessionid");     // ★ 型注釈
+    const idc = cookies.find((c: { name: string }) => c.name === "tt-target-idc");     // ★ 型注釈
 
     if (!session || !idc) {
       throw new Error("Required cookies not found (sessionid / tt-target-idc).");
