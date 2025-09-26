@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import { Builder, By, until, WebDriver } from "selenium-webdriver";
-import chrome from "selenium-webdriver/chrome";
+import * as chrome from "selenium-webdriver/chrome.js";
 import * as dotenv from "dotenv";
 dotenv.config();
 
