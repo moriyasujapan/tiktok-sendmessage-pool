@@ -1,3 +1,4 @@
+// src/conn/manager.ts
 import { TikTokLiveConnection, WebcastEvent, ControlEvent } from "tiktok-live-connector";
 
 export class ConnectionManager {
@@ -6,17 +7,16 @@ export class ConnectionManager {
   async connect(uniqueId: string, sessionId: string, ttTargetIdc: string) {
     if (this.pool.has(uniqueId)) return;
 
-    const conn = new TikTokLiveConnection(uniqueId, {
-      sessionId,
-      ttTargetIdc,
-    });
+    // READMEの認証オプション（sessionId / ttTargetIdc）をそのまま渡す
+    const conn = new TikTokLiveConnection(uniqueId, { sessionId, ttTargetIdc });
 
-    // イベントは列挙型で
     conn.on(WebcastEvent.CHAT, (d: any) => {
+      // 必要ならログ
       // console.log(`[CHAT:${uniqueId}] ${d.user?.uniqueId}: ${d.comment}`);
     });
+
     conn.on(ControlEvent.DISCONNECTED, () => {
-      // 再接続ロジックを必要ならここに
+      // 必要なら監視・再接続
     });
 
     await conn.connect();
