@@ -1,4 +1,4 @@
-import { TikTokLiveConnection, WebcastEvent } from "tiktok-live-connector";
+import { TikTokLiveConnection, WebcastEvent, ControlEvent } from "tiktok-live-connector";
 import fs from "fs/promises";
 
 type CookieCache = { sessionid: string; "tt-target-idc": string };
@@ -26,24 +26,22 @@ export class ConnectionManager {
     this.ensureCookiesLoaded();
     if (this.pool.has(uniqueId)) return; // already connected
 
-    // ★ options には session/IDC を渡さない（型エラー回避）
-    const conn = new TikTokLiveConnection(uniqueId);
+    // ★ v2 README準拠: コンストラクタの options に sessionId / ttTargetIdc を渡す
+    const conn = new TikTokLiveConnection(uniqueId, {
+      sessionId: this.cookies!.sessionid,
+      ttTargetIdc: this.cookies!["tt-target-idc"]
+    });
 
-    // ★ 公式READMEの推奨どおり、後から CookieJar に設定
-    //    connection.webClient.cookieJar.setSession('<sessionid>', '<tt-target-idc>')
-    conn.webClient.cookieJar.setSession(
-      this.cookies!.sessionid,
-      this.cookies!["tt-target-idc"]
-    ); // :contentReference[oaicite:2]{index=2}
-
-    // 代表的イベント（必要に応じて）
+    // 代表的イベント（必要ならログ出力を追加
     conn.on(WebcastEvent.CHAT, d => {
-      // 例：ログ最小限
       // console.log(`[CHAT:${uniqueId}] ${d.user.uniqueId}: ${d.comment}`);
     });
 
-    // ★ “disconnected” という生文字列は EventMap に無いので登録しない
-    //   代わりに送信失敗や connect() 例外で自前リトライ（下記 send() 参照）
+    // ★ 切断は列挙で
+    conn.on(ControlEvent.DISCONNECTED, () => {
+      // 必要ならここで監視・再接続トリガ
+      // console.warn(`[${uniqueId}] disconnected`);
+    });
 
     await conn.connect();
     this.pool.set(uniqueId, conn);
@@ -54,16 +52,16 @@ export class ConnectionManager {
     if (!conn) throw new Error(`Not connected to ${uniqueId}. Call /connect first.`);
 
     try {
-      await conn.sendMessage(message); // 2.0.2+ でサポート :contentReference[oaicite:3]{index=3}
+      await conn.sendMessage(message); // v2.0.2+ で対応
     } catch (err) {
-      // 軽い再接続リトライ（型安全に依存しない実装）
+      // 軽い再接続リトライ
       for (let i = 0; i < 3; i++) {
         try {
           await new Promise(r => setTimeout(r, 500 * (i + 1)));
           await conn.connect();
           await conn.sendMessage(message);
           return;
-        } catch { /* 次のリトライへ */ }
+        } catch { /* retry */ }
       }
       throw err;
     }
