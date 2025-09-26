@@ -1,4 +1,4 @@
-import { TikTokLiveConnection } from "tiktok-live-connector";
+import { TikTokLiveConnection, WebcastEvent } from "tiktok-live-connector";
 import fs from "fs/promises";
 
 type CookieCache = { sessionid: string; "tt-target-idc": string };
@@ -26,23 +26,24 @@ export class ConnectionManager {
     this.ensureCookiesLoaded();
     if (this.pool.has(uniqueId)) return; // already connected
 
-    const conn = new TikTokLiveConnection(uniqueId, {
-      sessionId: this.cookies!.sessionid,
-      ttTargetIdc: this.cookies!["tt-target-idc"]
+    // ★ options には session/IDC を渡さない（型エラー回避）
+    const conn = new TikTokLiveConnection(uniqueId);
+
+    // ★ 公式READMEの推奨どおり、後から CookieJar に設定
+    //    connection.webClient.cookieJar.setSession('<sessionid>', '<tt-target-idc>')
+    conn.webClient.cookieJar.setSession(
+      this.cookies!.sessionid,
+      this.cookies!["tt-target-idc"]
+    ); // :contentReference[oaicite:2]{index=2}
+
+    // 代表的イベント（必要に応じて）
+    conn.on(WebcastEvent.CHAT, d => {
+      // 例：ログ最小限
+      // console.log(`[CHAT:${uniqueId}] ${d.user.uniqueId}: ${d.comment}`);
     });
 
-    // auto-reconnect on disconnect
-    conn.on("disconnected", async () => {
-      for (let i = 0; i < 5; i++) {
-        try {
-          await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-          await conn.connect();
-          break;
-        } catch {
-          // リトライ
-        }
-      }
-    });
+    // ★ “disconnected” という生文字列は EventMap に無いので登録しない
+    //   代わりに送信失敗や connect() 例外で自前リトライ（下記 send() 参照）
 
     await conn.connect();
     this.pool.set(uniqueId, conn);
@@ -51,7 +52,21 @@ export class ConnectionManager {
   async send(uniqueId: string, message: string): Promise<void> {
     const conn = this.pool.get(uniqueId);
     if (!conn) throw new Error(`Not connected to ${uniqueId}. Call /connect first.`);
-    await conn.sendMessage(message);
+
+    try {
+      await conn.sendMessage(message); // 2.0.2+ でサポート :contentReference[oaicite:3]{index=3}
+    } catch (err) {
+      // 軽い再接続リトライ（型安全に依存しない実装）
+      for (let i = 0; i < 3; i++) {
+        try {
+          await new Promise(r => setTimeout(r, 500 * (i + 1)));
+          await conn.connect();
+          await conn.sendMessage(message);
+          return;
+        } catch { /* 次のリトライへ */ }
+      }
+      throw err;
+    }
   }
 
   async disconnect(uniqueId: string): Promise<void> {
@@ -69,4 +84,3 @@ export class ConnectionManager {
     }
   }
 }
-
