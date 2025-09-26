@@ -36,4 +36,10 @@ export class ConnectionManager {
       this.pool.delete(uniqueId);
     }
   }
+  async shutdownAll(): Promise<void> {
+    for (const [id, conn] of this.pool.entries()) {
+      try { await conn.disconnect(); } catch {}
+      this.pool.delete(id);
+    }
+  }
 }
