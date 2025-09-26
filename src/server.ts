@@ -70,8 +70,7 @@ app.post("/connect", async (req, res) => {
   if (!cookies) return res.status(500).json({ error: "cookies not loaded" });
 
   try {
-    // 認証オプションは README 記載のとおり sessionId / ttTargetIdc
-    await manager.connect(String(uniqueId), cookies.sessionid, cookies["tt-target-idc"]);
+    await manager.connect(String(uniqueId));
     res.json({ ok: true });
   } catch (err: any) {
     res.status(500).json({ error: err?.message ?? String(err) });
