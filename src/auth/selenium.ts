@@ -15,7 +15,11 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
 
   const options = new chrome.Options();
   if (headless) options.addArguments("--headless=new");
-  options.addArguments("--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage");
+  options.addArguments("--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled");
+
+  options.setUserPreferences({}); // placeholder if needed
+  options.setChromeBinaryPath(undefined); // 必要なら指定
+  options.addArguments(`--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36`);
 
   // ★ driver を nullable にしない
   let driver: WebDriver | undefined;
@@ -26,8 +30,37 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
       .usingServer(remoteUrl ?? "")
       .build();
 
+    try {
+      // CDP 経由でページ読み込み前に navigator.webdriver を上書きするスクリプトを登録
+      // Chrome DevTools Protocol の Page.addScriptToEvaluateOnNewDocument を使う
+      // NOTE: selenium-webdriver の Node バインディングでの CDP 呼び出し API はバージョンにより異なります。
+      // ここでは低レベルの executeCdpCommand を想定した呼び出し例を示します（Selenium 4+）。
+      const source = `
+        Object.defineProperty(navigator, 'webdriver', {
+          get: () => undefined,
+        });
+        // 追加で plugins / languages の簡易偽装も入れられる
+        Object.defineProperty(navigator, 'plugins', { get: () => [{name:'Chrome PDF Plugin'}] });
+        Object.defineProperty(navigator, 'languages', { get: () => ['en-US','en'] });
+      `;
+      // 実際の呼び出しは selenium のバージョンで差があるため try/catch でフォールバック
+      try {
+        // @ts-ignore: executeCdpCommand may not exist on the type depending on version
+        await (driver as any).executeCdpCommand('Page.addScriptToEvaluateOnNewDocument', { source });
+    } catch (e) {
+      // selenium バージョンによっては別 API（sendDevToolsCommand 等）があるので試す
+      try {
+        // @ts-ignore
+        await (driver as any).sendDevToolsCommand('Page.addScriptToEvaluateOnNewDocument', { source });
+      } catch (err) {
+        console.warn('CDP injection failed — your selenium binding may not support executeCdpCommand/sendDevToolsCommand in this version.', err);
+      }
+    }
+
     // 以降は driver! で明示（または if(!driver) throw）
     await driver!.get(LOGIN_URL);
+    const webdriverFlag = await driver.executeScript('return navigator.webdriver');
+    console.log('navigator.webdriver ->', webdriverFlag);
 
     const mode = (process.env.TIKTOK_LOGIN_MODE ?? "manual").toLowerCase();
 
