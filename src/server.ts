@@ -50,6 +50,7 @@ async function loadCookies(): Promise<CookieCache> {
     log.error("cookies.json missing sessionid or tt-target-idc.");
     process.exit(1);
   }
+  await manager.loadCookies(COOKIE_PATH);
 })().catch((err) => {
   log.error({ err }, "Fatal at startup");
   process.exit(1);
