@@ -1,7 +1,23 @@
-version: "3.9"
 services:
+  selenium:
+    image: selenium/standalone-chrome:124.0
+    shm_size: 2gb
+    ports:
+      - "4444:4444"
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+    healthcheck:
+      # Grid 4 は /status で ready:true を返す
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4444/status | grep -q '\"ready\": true'"]
+      interval: 5s
+      timeout: 2s
+      retries: 30
+      start_period: 5s
   api:
     build: .
+    depends_on:
+      selenium:
+        condition: service_healthy
     environment:
       - PORT=3000
       - TIKTOK_LOGIN_MODE=${TIKTOK_LOGIN_MODE:-manual}
@@ -16,16 +32,5 @@ services:
     volumes:
       - ./cookies.json:/data/cookies.json
       - ./.env:/app/.env
-    working_dir: /app
     ports:
       - "3000:3000"
-    depends_on:
-      - selenium
-
-  selenium:
-    image: selenium/standalone-chrome:124.0
-    shm_size: 2gb
-    environment:
-      - SE_NODE_MAX_SESSIONS=1
-    ports:
-      - "4444:4444"
