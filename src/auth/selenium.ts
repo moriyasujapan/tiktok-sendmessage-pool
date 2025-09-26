@@ -17,7 +17,8 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   if (headless) options.addArguments("--headless=new");
   options.addArguments("--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage");
 
-  let driver: WebDriver | null = null;
+  // ★ driver を nullable にしない
+  let driver: WebDriver | undefined;
   try {
     driver = await new Builder()
       .forBrowser("chrome")
@@ -25,40 +26,41 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
       .usingServer(remoteUrl ?? "")
       .build();
 
-    await driver.get(LOGIN_URL);
+    // 以降は driver! で明示（または if(!driver) throw）
+    await driver!.get(LOGIN_URL);
 
     const mode = (process.env.TIKTOK_LOGIN_MODE ?? "manual").toLowerCase();
 
     if (mode === "credentials") {
-      await driver.wait(until.elementLocated(By.css("input[type='text'],input[type='email']")), 15000);
-      const userInput = await driver.findElement(By.css("input[type='text'],input[type='email']"));
+      await driver!.wait(until.elementLocated(By.css("input[type='text'],input[type='email']")), 15000);
+      const userInput = await driver!.findElement(By.css("input[type='text'],input[type='email']"));
       await userInput.clear();
       await userInput.sendKeys(process.env.TIKTOK_USERNAME ?? "");
 
-      await driver.wait(until.elementLocated(By.css("input[type='password']")), 10000);
-      const passInput = await driver.findElement(By.css("input[type='password']"));
+      await driver!.wait(until.elementLocated(By.css("input[type='password']")), 10000);
+      const passInput = await driver!.findElement(By.css("input[type='password']"));
       await passInput.clear();
       await passInput.sendKeys(process.env.TIKTOK_PASSWORD ?? "");
 
-      const submit = await driver.findElements(By.css("button[type='submit'],button[data-e2e='login-button']"));
+      const submit = await driver!.findElements(By.css("button[type='submit'],button[data-e2e='login-button']"));
       if (submit[0]) await submit[0].click();
 
-      await driver.wait(async () => {
-        await driver.get(HOMEPAGE);
-        const cookies = await driver.manage().getCookies();
-        return cookies.some(c => c.name === "sessionid");
+      await driver!.wait(async () => {
+        await driver!.get(HOMEPAGE);
+        const cookies = await driver!.manage().getCookies();
+        return cookies.some((c: { name: string }) => c.name === "sessionid");
       }, 60000);
     } else {
-      await driver.wait(async () => {
-        const cookies = await driver.manage().getCookies();
-        return cookies.some((c: { name: string }) => c.name === "sessionid");  // ★ 型注釈
+      await driver!.wait(async () => {
+        const cookies = await driver!.manage().getCookies();
+        return cookies.some((c: { name: string }) => c.name === "sessionid");
       }, 300000);
-      await driver.get(HOMEPAGE);
+      await driver!.get(HOMEPAGE);
     }
 
-    const cookies = await driver.manage().getCookies();
-    const session = cookies.find((c: { name: string }) => c.name === "sessionid");     // ★ 型注釈
-    const idc = cookies.find((c: { name: string }) => c.name === "tt-target-idc");     // ★ 型注釈
+    const cookies = await driver!.manage().getCookies();
+    const session = cookies.find((c: { name: string; value: string }) => c.name === "sessionid");
+    const idc = cookies.find((c: { name: string; value: string }) => c.name === "tt-target-idc");
 
     if (!session || !idc) {
       throw new Error("Required cookies not found (sessionid / tt-target-idc).");
@@ -74,4 +76,3 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
     if (driver) await driver.quit();
   }
 }
-
