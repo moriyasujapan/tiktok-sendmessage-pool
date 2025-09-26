@@ -1,47 +1,49 @@
 # TikTok SendMessage Microservice (Connection Pool)
 
-# 開発中(This product is currently under development)
+# This product is currently under development
 
-**tiktok-live-connector** を使って **sendMessage 専用 API** を提供します。  
-起動時に **Selenium で TikTok にログイン → `sessionid` と `tt-target-idc` を自動取得**し、
-**常時コネクション再利用（プール）** で高速に送信します。
+It provides a dedicated sendMessage API using @zerodytrash/TikTok-Live-Connector.
 
-> 注意: これは非公式ライブラリです。TikTok の仕様変更で動作が変わる場合があります。
+At startup, **log in to TikTok using Selenium → automatically obtain `sessionid` and `tt-target-idc`**,
+and send data at high speed **by constantly reusing (pooling) the connection**.
 
-## 機能
-- `POST /connect` … 指定の `uniqueId` へ接続（常駐）
-- `POST /send` … 常駐コネクションを使って即時送信
-- `POST /disconnect` … 該当 `uniqueId` のコネクションを解放
-- `GET /health` … ヘルスチェック
+> Note: This is an unofficial library. Its behavior may change with changes in TikTok specifications.
 
-## 使い方（Docker）
+## Functions
+- `POST /connect` ... Connect to the specified `uniqueId` (create a persistent connection)
+- `POST /send` ... Send immediately using a persistent connection
+- `POST /disconnect` ... Release the connection for the specified `uniqueId`
+- `GET /health` ... Check health
+
+## How to use (Docker)
+
 ```bash
-cp .env.example .env   # 必要に応じて編集（初回は manual ログイン推奨）
+cp .env.example .env # Edit as needed (manual login recommended the first time)
 docker compose up
-# → セレニウムのブラウザで TikTok ログインを完了すると cookies.json が作成されます
+# → Complete the TikTok login in the Selenium browser to create cookies.json.
 ```
 
-### 送信
-# 1) 事前に接続（常駐）
+## How to send
+### 1) Pre-connect (persistent connection)
 
 ```bash
-curl -X POST http://localhost:3000/connect -H 'Content-Type: application/json' -d '{"uniqueId":"配信者"}'
+curl -X POST http://localhost:3000/connect -H 'Content-Type: application/json' -d '{"uniqueId":"toba_aquarium"}'
 ```
 
-# 2) 送信（即時）
+### 2) Send message (immediately)
 ```bash
-curl -X POST http://localhost:3000/send -H 'Content-Type: application/json' -d '{"uniqueId":"配信者","message":"こんにちは"}'
+curl -X POST http://localhost:3000/send -H 'Content-Type: application/json' -d '{"uniqueId":"toba_aquarium","message":"Hello World"}'
 ```
 
-### 切断
+###　3) Release the connection
 ```bash
-curl -X POST http://localhost:3000/disconnect -H 'Content-Type: application/json' -d '{"uniqueId":"配信者"}'
+curl -X POST http://localhost:3000/disconnect -H 'Content-Type: application/json' -d '{"uniqueId":"toba_aquarium"}'
 ```
 
-### 環境変数とファイルは .env.example を参照してください。
-（初期状態として“REPLACE”のプレースホルダーを入れています。Selenium 起動後、実際の値に置き換えられます。）
-```yaml
-## `cookies.json`
+## See ".env.example" for environment variables and files.
+
+## cookies.json
+The initial state is a placeholder "REPLACE". After Selenium starts, it will be replaced with the actual value.
 
 ```json
 {
