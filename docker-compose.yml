@@ -15,7 +15,7 @@ services:
       # - HTTPS_PROXY=...
     volumes:
       - ./cookies.json:/data/cookies.json
-      - ./:/app
+      - ./.env:/app/.env
     working_dir: /app
     ports:
       - "3000:3000"
