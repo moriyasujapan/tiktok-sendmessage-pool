@@ -26,14 +26,13 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   options.add_argument("--disable-dev-shm-usage")
 
   options.add_experimental_option("excludeSwitches", ["enable-automation"])
-  options.add_experimental_option("useAutomationExtension", False)
+  options.add_experimental_option("useAutomationExtension", "False")
   options.add_argument("--disable-blink-features=AutomationControlled")
 
   options.add_argument("--user-data-dir=./chrome/profile")
   options.add_argument("--profile-directory=Default")
 
-  options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "\
-                     "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
+  options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
 
   // options.setUserPreferences({}); // placeholder if needed
   // // options.setChromeBinaryPath(undefined); // 必要なら指定

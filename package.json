@@ -14,8 +14,7 @@
     "tiktok-live-connector": "1.2.3",
     "pino": "^9.3.2",
     "pino-pretty": "^11.2.2",
-    "selenium-webdriver": "^4.24.0",
-    "undetected-chromedriver-js": "^1.2.2"
+    "selenium-webdriver": "^4.24.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
