@@ -22,7 +22,6 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   // options.setChromeBinaryPath(undefined); // 必要なら指定
   options.addArguments(`--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36`);
   options.excludeSwitches("enable-automation");
-  options.add_experimental_option("excludeSwitches", ["enable-automation"])
   options.excludeSwitches("enable-automation", "load-extension");
 
   // ★ driver を nullable にしない
