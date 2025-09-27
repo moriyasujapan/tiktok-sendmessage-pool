@@ -15,9 +15,9 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   const remoteUrl = process.env.SELENIUM_REMOTE_URL;
   const headless = (process.env.SELENIUM_HEADLESS ?? "false") === "true";
 
-  const options = new chrome.Options();
+  const options = new chrome.Options()
   if (headless) 
-    options.addArguments("--headless=new");
+    options.addArguments("--headless=new")
   options.add_argument("--start-maximized")
   options.add_argument("--disable-infobars")
   options.add_argument("--disable-extensions")
