@@ -25,8 +25,8 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   options.addArguments("--no-sandbox")
   options.addArguments("--disable-dev-shm-usage")
 
-  options.add_experimental_option("excludeSwitches", ["enable-automation"])
-  options.add_experimental_option("useAutomationExtension", false)
+  // options.add_experimental_option("excludeSwitches", ["enable-automation"])
+  // options.add_experimental_option("useAutomationExtension", false)
   options.addArguments("--disable-blink-features=AutomationControlled")
 
   options.addArguments("--user-data-dir=./chrome/profile")
