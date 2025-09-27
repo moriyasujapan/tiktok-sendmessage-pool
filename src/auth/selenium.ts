@@ -6,7 +6,8 @@ dotenv.config();
 
 type Cookies = { sessionid: string; "tt-target-idc": string };
 
-const LOGIN_URL = "https://www.tiktok.com/login";
+//const LOGIN_URL = "https://www.tiktok.com/login";
+const LOGIN_URL = "https://www.tiktok.com/login/phone-or-email/email";
 const HOMEPAGE = "https://www.tiktok.com/";
 
 export async function fetchCookiesWithSelenium(): Promise<Cookies> {
