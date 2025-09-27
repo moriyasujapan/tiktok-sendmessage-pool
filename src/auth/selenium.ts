@@ -31,12 +31,6 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
       .setChromeOptions(options)
       .usingServer(remoteUrl ?? "")
       .build();
-    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        "source": """
-            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-            // You may override other properties (plugins, languages, etc.) too
-        """
-    })
     try {
       // CDP 経由でページ読み込み前に navigator.webdriver を上書きするスクリプトを登録
       // Chrome DevTools Protocol の Page.addScriptToEvaluateOnNewDocument を使う
@@ -48,7 +42,7 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
         });
         // 追加で plugins / languages の簡易偽装も入れられる
         Object.defineProperty(navigator, 'plugins', { get: () => [{name:'Chrome PDF Plugin'}] });
-        Object.defineProperty(navigator, 'languages', { get: () => ['en-US','en'] });
+        Object.defineProperty(navigator, 'languages', { get: () => ['ja-JP','ja'] });
       `;
       // 実際の呼び出しは selenium のバージョンで差があるため try/catch でフォールバック
       try {
