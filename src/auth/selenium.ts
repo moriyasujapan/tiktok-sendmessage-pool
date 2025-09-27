@@ -20,6 +20,8 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   options.setUserPreferences({}); // placeholder if needed
   options.setChromeBinaryPath(undefined); // 必要なら指定
   options.addArguments(`--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36`);
+  options.add_experimental_option("excludeSwitches", ["enable-automation"])
+  options.add_experimental_option("useAutomationExtension", false)
 
   // ★ driver を nullable にしない
   let driver: WebDriver | undefined;
@@ -29,7 +31,12 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
       .setChromeOptions(options)
       .usingServer(remoteUrl ?? "")
       .build();
-
+    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+            // You may override other properties (plugins, languages, etc.) too
+        """
+    })
     try {
       // CDP 経由でページ読み込み前に navigator.webdriver を上書きするスクリプトを登録
       // Chrome DevTools Protocol の Page.addScriptToEvaluateOnNewDocument を使う
