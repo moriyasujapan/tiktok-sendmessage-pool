@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import { Builder, By, until, WebDriver } from "selenium-webdriver";
-import * as chrome from "selenium-webdriver/chrome.js";
+// import * as chrome from "selenium-webdriver/chrome.js";
+import * as chrome from "undetected-chromedriver-js"
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -17,13 +18,27 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   const options = new chrome.Options();
   if (headless) 
     options.addArguments("--headless=new");
-  options.addArguments("--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled");
+  options.add_argument("--start-maximized")
+  options.add_argument("--disable-infobars")
+  options.add_argument("--disable-extensions")
+  options.add_argument("--disable-gpu")
+  options.add_argument("--no-sandbox")
+  options.add_argument("--disable-dev-shm-usage")
 
-  options.setUserPreferences({}); // placeholder if needed
-  // options.setChromeBinaryPath(undefined); // 必要なら指定
-  options.addArguments(`--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36`);
-  options.excludeSwitches("enable-automation");
-  options.excludeSwitches("enable-automation", "load-extension");
+  options.add_experimental_option("excludeSwitches", ["enable-automation"])
+  options.add_experimental_option("useAutomationExtension", False)
+  options.add_argument("--disable-blink-features=AutomationControlled")
+
+  options.add_argument("--user-data-dir=./chrome/profile")
+  options.add_argument("--profile-directory=Default")
+
+  options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "\
+                     "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
+
+  // options.setUserPreferences({}); // placeholder if needed
+  // // options.setChromeBinaryPath(undefined); // 必要なら指定
+  // options.addArguments(`--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36`);
+  // options.excludeSwitches("enable-automation", "load-extension");
 
   // ★ driver を nullable にしない
   let driver: WebDriver | undefined;
