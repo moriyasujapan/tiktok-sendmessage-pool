@@ -19,7 +19,7 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   options.addArguments("--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--disable-blink-features=AutomationControlled");
 
   options.setUserPreferences({}); // placeholder if needed
-  options.setChromeBinaryPath(undefined); // 必要なら指定
+  // options.setChromeBinaryPath(undefined); // 必要なら指定
   options.addArguments(`--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36`);
   options.excludeSwitches("enable-automation");
   options.add_experimental_option("excludeSwitches", ["enable-automation"])
