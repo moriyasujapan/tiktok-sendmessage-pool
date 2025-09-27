@@ -48,14 +48,17 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
       try {
         // @ts-ignore: executeCdpCommand may not exist on the type depending on version
         await (driver as any).executeCdpCommand('Page.addScriptToEvaluateOnNewDocument', { source });
-    } catch (e) {
-      // selenium バージョンによっては別 API（sendDevToolsCommand 等）があるので試す
-      try {
-        // @ts-ignore
-        await (driver as any).sendDevToolsCommand('Page.addScriptToEvaluateOnNewDocument', { source });
-      } catch (err) {
-        console.warn('CDP injection failed — your selenium binding may not support executeCdpCommand/sendDevToolsCommand in this version.', err);
+      } catch (e) {
+        // selenium バージョンによっては別 API（sendDevToolsCommand 等）があるので試す
+        try {
+          // @ts-ignore
+          await (driver as any).sendDevToolsCommand('Page.addScriptToEvaluateOnNewDocument', { source });
+        } catch (err) {
+          console.warn('CDP injection failed — your selenium binding may not support executeCdpCommand/sendDevToolsCommand in this version.', err);
+        }
       }
+    } catch (err) {
+      console.warn('CDP injection failed — your selenium binding may not support executeCdpCommand/sendDevToolsCommand in this version.', err);
     }
 
     // 以降は driver! で明示（または if(!driver) throw）
