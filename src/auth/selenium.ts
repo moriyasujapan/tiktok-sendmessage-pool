@@ -18,21 +18,21 @@ export async function fetchCookiesWithSelenium(): Promise<Cookies> {
   const options = new chrome.Options()
   if (headless) 
     options.addArguments("--headless=new")
-  options.add_argument("--start-maximized")
-  options.add_argument("--disable-infobars")
-  options.add_argument("--disable-extensions")
-  options.add_argument("--disable-gpu")
-  options.add_argument("--no-sandbox")
-  options.add_argument("--disable-dev-shm-usage")
+  options.addArguments("--start-maximized")
+  options.addArguments("--disable-infobars")
+  options.addArguments("--disable-extensions")
+  options.addArguments("--disable-gpu")
+  options.addArguments("--no-sandbox")
+  options.addArguments("--disable-dev-shm-usage")
 
   options.add_experimental_option("excludeSwitches", ["enable-automation"])
   options.add_experimental_option("useAutomationExtension", "False")
-  options.add_argument("--disable-blink-features=AutomationControlled")
+  options.addArguments("--disable-blink-features=AutomationControlled")
 
-  options.add_argument("--user-data-dir=./chrome/profile")
-  options.add_argument("--profile-directory=Default")
+  options.addArguments("--user-data-dir=./chrome/profile")
+  options.addArguments("--profile-directory=Default")
 
-  options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
+  options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
 
   // options.setUserPreferences({}); // placeholder if needed
   // // options.setChromeBinaryPath(undefined); // 必要なら指定
